@@ -20,7 +20,14 @@ impl Atag {
 
     /// Returns the ATAG following `self`, if there is one.
     pub fn next(&self) -> Option<&Atag> {
-        unimplemented!()
+        unsafe {
+            if self.tag == Atag::NONE {
+                None
+            } else {
+                let ptr = (self as *const Atag as *const u32).add(self.dwords as usize);
+                Some(&*(ptr as *const Atag))
+            }
+        }
     }
 }
 
