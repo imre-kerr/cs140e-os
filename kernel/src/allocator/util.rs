@@ -6,7 +6,13 @@
 ///
 /// Panics if `align` is not a power of 2.
 pub fn align_down(addr: usize, align: usize) -> usize {
-    unimplemented!()
+    if align.count_ones() != 1 {
+        panic!("{} is not a power of 2", align)
+    }
+
+    let trimmed = addr & (align - 1);
+
+    addr - trimmed
 }
 
 /// Align `addr` upwards to the nearest multiple of `align`.
@@ -17,5 +23,5 @@ pub fn align_down(addr: usize, align: usize) -> usize {
 ///
 /// Panics if `align` is not a power of 2.
 pub fn align_up(addr: usize, align: usize) -> usize {
-    unimplemented!()
+    align_down(addr + align - 1, align)
 }
