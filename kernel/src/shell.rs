@@ -1,3 +1,4 @@
+use std;
 use stack_vec::StackVec;
 use console::{kprint, kprintln, CONSOLE};
 
@@ -36,12 +37,75 @@ impl<'a> Command<'a> {
 
     /// Returns this command's path. This is equivalent to the first argument.
     fn path(&self) -> &str {
-        unimplemented!()
+        self.args[0]
+    }
+
+    fn execute(&self) {
+        match self.path() {
+            "echo" => self.echo(),
+            command => kprint!("unknown command: {}", command),
+        };
+    }
+
+    fn echo(&self) {
+        for arg in self.args[1..].iter() {
+            kprint!("{} ", arg);
+        }
     }
 }
 
 /// Starts a shell using `prefix` as the prefix for each line. This function
 /// never returns: it is perpetually in a shell loop.
 pub fn shell(prefix: &str) -> ! {
-    unimplemented!()
+    let line_buf = &mut [0u8; 512];
+    let mut line_buf = StackVec::new(line_buf);
+    loop {
+        kprint!("\r\n{}", prefix);
+        loop {
+            let byte = CONSOLE.lock().read_byte();
+            match byte {
+                8u8 | 127u8 => {
+                    match line_buf.pop() {
+                        Some(_) => {
+                            kprint!("\u{8} \u{8}");
+                        },
+                        None => {},
+                    }
+                },
+                b'\r' | b'\n' => {
+                    kprintln!();
+
+                    let command = std::str::from_utf8(line_buf.as_slice());
+                    match command {
+                        Ok(command) => {
+                            let command_buf = &mut [""; 512];
+                            let command = Command::parse(command, command_buf);
+                            match command {
+                                Ok(command) => command.execute(),
+                                Err(Error::TooManyArgs) => kprint!("error: too many arguments"),
+                                Err(Error::Empty) => {},
+                            };
+                        },
+                        Err(_) => kprint!("error: invalid characters in input"),
+                    };
+
+                    break;
+                },
+                32u8 ... 126u8 => {
+                    CONSOLE.lock().write_byte(byte);
+                    match line_buf.push(byte) {
+                        Ok(_) => {},
+                        Err(_) => {
+                            kprintln!("\nerror: too many characters\n");
+                            break;
+                        }
+                    }
+                },
+                _ => {
+                    CONSOLE.lock().write_byte(7u8);
+                }
+            };
+        };
+        line_buf.truncate(0);
+    }
 }
