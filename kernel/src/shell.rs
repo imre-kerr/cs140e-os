@@ -1,6 +1,7 @@
 use std;
 use stack_vec::StackVec;
 use console::{kprint, kprintln, CONSOLE};
+use pi::atags;
 
 /// Error type for `Command` parse failures.
 #[derive(Debug)]
@@ -44,6 +45,7 @@ impl<'a> Command<'a> {
         match self.path() {
             "echo" => self.echo(),
             "die" => self.die(),
+            "atags" => self.atags(),
             command => kprint!("unknown command: {}", command),
         };
     }
@@ -56,6 +58,13 @@ impl<'a> Command<'a> {
 
     fn die(&self) {
         panic!("I'm panicking! {} panics!", 42);
+    }
+
+    fn atags(&self) {
+        kprintln!("Found the following ATAGS:");
+        for atag in atags::Atags::get() {
+            kprintln!("{:#?}", atag);
+        }
     }
 }
 
