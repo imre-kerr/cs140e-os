@@ -3,7 +3,7 @@ CROSS ?= $(TARGET)
 
 CC := $(CROSS)-gcc
 TTYWRITE ?= ttywrite
-PI_TTY ?= /dev/tty.SLAB_USBtoUART
+PI_TTY ?= /dev/ttyUSB0
 CCFLAGS ?= -Wall -O2 -nostdlib -nostartfiles -ffreestanding -pie -fpie
 LDFLAGS ?= --gc-sections -static -nostdlib -nostartfiles --no-dynamic-linker
 XARGO ?= CARGO_INCREMENTAL=0 RUST_TARGET_PATH="$(shell pwd)" xargo
@@ -40,7 +40,7 @@ test:
 	@$(CARGO) test
 
 install: $(KERNEL).bin
-	$(TTYWRITE) -i $< $(PI_TTY)
+	$(TTYWRITE) --baud 57600 -i $< $(PI_TTY)
 
 $(RUST_DEBUG_LIB): $(RUST_DEPS)
 	@echo "+ Building $@ [xargo]"
