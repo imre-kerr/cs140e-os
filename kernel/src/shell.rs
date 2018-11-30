@@ -43,6 +43,7 @@ impl<'a> Command<'a> {
     fn execute(&self) {
         match self.path() {
             "echo" => self.echo(),
+            "die" => self.die(),
             command => kprint!("unknown command: {}", command),
         };
     }
@@ -51,6 +52,10 @@ impl<'a> Command<'a> {
         for arg in self.args[1..].iter() {
             kprint!("{} ", arg);
         }
+    }
+
+    fn die(&self) {
+        panic!("I'm panicking! {} panics!", 42);
     }
 }
 
