@@ -1,7 +1,6 @@
 use std;
 use stack_vec::StackVec;
 use console::{kprint, kprintln, CONSOLE};
-use pi::atags;
 
 /// Error type for `Command` parse failures.
 #[derive(Debug)]
@@ -46,6 +45,7 @@ impl<'a> Command<'a> {
             "echo" => self.echo(),
             "die" => self.die(),
             "atags" => self.atags(),
+            "allocator" => self.allocator(),
             command => kprint!("unknown command: {}", command),
         };
     }
@@ -61,10 +61,16 @@ impl<'a> Command<'a> {
     }
 
     fn atags(&self) {
+        use pi::atags;
         kprintln!("Found the following ATAGS:");
         for atag in atags::Atags::get() {
             kprintln!("{:#?}", atag);
         }
+    }
+
+    fn allocator(&self) {
+        use allocator;
+        allocator::Allocator::uninitialized().initialize();
     }
 }
 

@@ -16,7 +16,7 @@ pub extern fn panic_fmt(fmt: ::std::fmt::Arguments, file: &'static str, line: u3
    ~\\^^^^^^^^^^^^^^^^^^/~
      `================`
 
-    The pi is overdone.
+   The pi is overcooked.
 
 ---------- PANIC ----------
 ");

@@ -11,6 +11,8 @@ use mutex::Mutex;
 use alloc::heap::{Alloc, AllocErr, Layout};
 use std::cmp::max;
 
+use pi::atags;
+
 /// Thread-safe (locking) wrapper around a particular memory allocator.
 #[derive(Debug)]
 pub struct Allocator(Mutex<Option<imp::Allocator>>);
@@ -89,5 +91,16 @@ extern "C" {
 fn memory_map() -> Option<(usize, usize)> {
     let binary_end = unsafe { (&_end as *const u8) as u32 };
 
-    unimplemented!("memory map fetch")
+    for atag in atags::Atags::get() {
+        if let Some(mem) = atag.mem() {
+            let kernel_size = binary_end - mem.start;
+            let available_size = mem.size - kernel_size;
+
+            let available_start = binary_end;
+            let available_end = available_start  + available_size;
+
+            return Some((available_start as usize, available_end as usize));
+        }
+    }
+    None
 }
