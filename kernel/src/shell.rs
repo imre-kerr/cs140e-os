@@ -69,8 +69,11 @@ impl<'a> Command<'a> {
     }
 
     fn allocator(&self) {
-        use allocator;
-        allocator::Allocator::uninitialized().initialize();
+        let mut v = vec![];
+        for i in 0..1000 {
+            v.push(i);
+            kprintln!("{:?}", v);
+        }
     }
 }
 
