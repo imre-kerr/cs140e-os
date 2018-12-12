@@ -6,14 +6,20 @@ use allocator::linked_list::LinkedList;
 
 /// A simple allocator that allocates based on size classes.
 pub struct Allocator {
-    // FIXME: Add the necessary fields.
+    bump_current: usize,
+    bump_end: usize,
+    bin: LinkedList // The one and only
 }
 
 impl Allocator {
     /// Creates a new bin allocator that will allocate memory from the region
     /// starting at address `start` and ending at address `end`.
     pub fn new(start: usize, end: usize) -> Allocator {
-        unimplemented!("bin allocator")
+        Allocator {
+            bump_current: start,
+            bump_end: end,
+            bin: LinkedList::new()
+        }
     }
 
     /// Allocates memory. Returns a pointer meeting the size and alignment
@@ -37,7 +43,21 @@ impl Allocator {
     /// (`AllocError::Exhausted`) or `layout` does not meet this allocator's
     /// size or alignment constraints (`AllocError::Unsupported`).
     pub fn alloc(&mut self, layout: Layout) -> Result<*mut u8, AllocErr> {
-        unimplemented!("bin allocation")
+        match self.bin.pop() {
+            Some(ptr) => Ok(ptr as *mut u8),
+            None => self.bump_alloc(layout)
+        }
+    }
+
+    fn bump_alloc(&mut self, layout: Layout) -> Result<*mut u8, AllocErr> {
+        let ret = align_up(self.bump_current, layout.align());
+        let alloc_end = ret.saturating_add(layout.size());
+        if alloc_end > self.bump_end || alloc_end - ret < layout.size() {
+            Err(AllocErr::Exhausted { request: layout })
+        } else {
+            self.bump_current = alloc_end;
+            unsafe { Ok( ret as *mut u8 ) }
+        }
     }
 
     /// Deallocates the memory referenced by `ptr`.
@@ -54,8 +74,15 @@ impl Allocator {
     /// Parameters not meeting these conditions may result in undefined
     /// behavior.
     pub fn dealloc(&mut self, ptr: *mut u8, layout: Layout) {
-        unimplemented!("bin deallocation")
+        unsafe {
+            self.bin.push(ptr as *mut usize);
+        }
     }
 }
 //
 // FIXME: Implement `Debug` for `Allocator`.
+impl fmt::Debug for Allocator {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        unimplemented!()
+    }
+}
