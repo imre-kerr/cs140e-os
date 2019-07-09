@@ -257,6 +257,7 @@
 #![feature(const_fn)]
 #![feature(core_float)]
 #![feature(core_intrinsics)]
+#![feature(core_panic_info)]
 #![feature(dropck_eyepatch)]
 #![feature(exact_size_is_empty)]
 #![feature(fs_read_write)]
@@ -356,15 +357,13 @@ use prelude::v1::*;
 // imported by the compiler (via our #[no_std] attribute) In this case we just
 // add a new crate name so we can attach the re-exports to it.
 //- #[macro_reexport(assert, assert_eq, assert_ne, debug_assert, debug_assert_eq,
-#[macro_reexport(panic, assert, assert_eq, assert_ne, debug_assert, debug_assert_eq,
-                 debug_assert_ne, unreachable, unimplemented, write, writeln, try)]
 extern crate core as __core;
+pub use __core::{panic, assert_eq, assert_ne, debug_assert, debug_assert_eq,
+                 debug_assert_ne, unreachable, unimplemented, write, writeln, try};
 
 // #[macro_use]
-#[macro_reexport(vec, format)]
 extern crate alloc;
 //- extern crate alloc_system;
-extern crate std_unicode;
 //- #[doc(masked)]
 //- extern crate libc;
 
