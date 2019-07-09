@@ -8,7 +8,7 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use alloc::heap::{Heap, Alloc, Layout};
+use alloc::alloc::{alloc, Alloc, Layout};
 
 use cmp;
 use hash::{BuildHasher, Hash, Hasher};
@@ -16,7 +16,7 @@ use marker;
 use mem::{align_of, size_of, needs_drop};
 use mem;
 use ops::{Deref, DerefMut};
-use ptr::{self, Unique, Shared};
+use ptr::{self, Unique, NonNull as Shared};
 
 use self::BucketState::*;
 
@@ -777,7 +777,7 @@ impl<K, V> RawTable<K, V> {
                     .expect("capacity overflow"),
                 "capacity overflow");
 
-        let buffer = Heap.alloc(Layout::from_size_align(size, alignment).unwrap())
+        let buffer = alloc(Layout::from_size_align(size, alignment).unwrap())
             .unwrap_or_else(|e| Heap.oom(e));
 
         let hashes = buffer as *mut HashUint;
